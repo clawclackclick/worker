@@ -1,0 +1,16 @@
+matrix:
+  homeserver: "https://matrix.org"
+  user_id: "@yourbot:matrix.org"
+  access_token: "YOUR_MATRIX_ACCESS_TOKEN"
+  device_id: "YOUR_DEVICE_ID"
+
+shkeeper:
+  url: "http://10.0.0.2:5000"  # Internal VPN IP
+  api_key: "YOUR_SHKEEPER_API_KEY"
+
+agent:
+  spending_limit_usd: 1.0      # Per transaction limit ($1)
+  daily_budget_usd: 5.0        # Daily spending limit ($5)
+  openai_key: "YOUR_OPENAI_API_KEY"
+
+log_level: "info"  # debug, info, warn, error

@@ -1,0 +1,90 @@
+# SHKeeper - Self-hosted crypto payment processor
+# Deploy this on your SEPARATE VPS (shkeeper.clawclack.click)
+
+version: '3.8'
+
+services:
+  shkeeper:
+    image: vsyshost/shkeeper:latest
+    container_name: shkeeper
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5000:5000"  # Only bind to localhost, use reverse proxy for external
+    environment:
+      # Database
+      - DATABASE_URI=postgresql://shkeeper:${POSTGRES_PASSWORD}@postgres:5432/shkeeper
+      
+      # TRON (USDT TRC20)
+      - TRON_ENABLED=true
+      - TRON_FULL_NODE=https://api.trongrid.io
+      - TRON_SOLIDITY_NODE=https://api.trongrid.io
+      - TRON_API_KEY=${TRON_API_KEY}
+      - TRON_WALLET_PRIVATE_KEY=${TRON_WALLET_PRIVATE_KEY}
+      
+      # Polygon (USDC)
+      - POLYGON_ENABLED=true
+      - POLYGON_RPC=https://polygon-rpc.com
+      - POLYGON_WALLET_PRIVATE_KEY=${POLYGON_WALLET_PRIVATE_KEY}
+      
+      # Security
+      - API_KEY=${SHKEEPER_API_KEY}
+      - WEBHOOK_SECRET=${WEBHOOK_SECRET}
+      
+      # Notifications (optional)
+      - EMAIL_ENABLED=false
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
+    volumes:
+      - shkeeper_data:/app/data
+      - ./backups:/app/backups
+    depends_on:
+      - postgres
+    networks:
+      - shkeeper-network
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: shkeeper-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=shkeeper
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=shkeeper
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - shkeeper-network
+
+  # Reverse proxy with HTTPS (optional but recommended)
+  traefik:
+    image: traefik:v2.10
+    container_name: shkeeper-traefik
+    restart: unless-stopped
+    command:
+      - "--api.insecure=false"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./letsencrypt:/letsencrypt
+    networks:
+      - shkeeper-network
+    labels:
+      - "traefik.enable=true"
+
+networks:
+  shkeeper-network:
+    driver: bridge
+
+volumes:
+  shkeeper_data:
+  postgres_data:
+  
