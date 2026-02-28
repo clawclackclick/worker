@@ -15,9 +15,9 @@ import (
 	"maunium.net/go/mautrix/event"
 	"maunium.net/go/mautrix/id"
 
-	"clawclack/bot/pkg/agent"
-	"clawclack/bot/pkg/handlers"
-	"clawclack/bot/pkg/shkeeper"
+	"clawclack/pkg/agent"
+	"clawclack/pkg/handlers"
+	"clawclack/pkg/shkeeper"
 )
 
 type Bot struct {
