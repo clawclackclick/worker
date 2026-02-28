@@ -84,6 +84,7 @@ func (h *PaymentHandler) monitorPayment(ctx *Context, orderID string) {
     ctx.Agent.RecordEarn(amount, status.Currency, "Service payment")
     return
    }
+
 case <-timeout:
    Reply(ctx, fmt.Sprintf("⏰ Payment expired. Order: %s", orderID))
    return
