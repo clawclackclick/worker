@@ -3,11 +3,14 @@ package handlers
 import (
  "context"
  "fmt"
+ "strconv"
  "strings"
  "time"
 
  "github.com/charmbracelet/log"
  "github.com/google/uuid"
+
+ "clawclack/pkg/shkeeper"
 )
 
 // PaymentHandler handles payment creation
@@ -51,7 +54,7 @@ func (h *PaymentHandler) Handle(ctx *Context) error {
  msg := fmt.Sprintf("💳 Payment Request\n\nAmount: %s %s\nOrder ID: %s\n\nPay here: %s\n\nExpires in 30 minutes", 
   amount, currency, orderID, invoice.PaymentURL)
 
- ReplyWithHTML(ctx, msg)
+ Reply(ctx, msg)
 
  // Start monitoring payment in background
  go h.monitorPayment(ctx, orderID)
@@ -76,11 +79,12 @@ func (h *PaymentHandler) monitorPayment(ctx *Context, orderID string) {
    if status.Status == "confirmed" {
     Reply(ctx, fmt.Sprintf("✅ Payment confirmed!\nOrder: %s\nThank you!", orderID))
     
-    // Record earnings for agent
-    ctx.Agent.RecordEarn(status.Amount, status.Currency, "Service payment")
+    // Convert string amount to float
+    amount, _ := strconv.ParseFloat(status.Amount, 64)
+    ctx.Agent.RecordEarn(amount, status.Currency, "Service payment")
     return
    }
-  case <-timeout:
+case <-timeout:
    Reply(ctx, fmt.Sprintf("⏰ Payment expired. Order: %s", orderID))
    return
   }
@@ -119,7 +123,7 @@ func (h *StatusHandler) Handle(ctx *Context) error {
   msg += fmt.Sprintf("\nAmount: %s %s", status.Amount, status.Currency)
  }
 
- ReplyWithHTML(ctx, msg)
+ Reply(ctx, msg)
  return nil
 }
 
