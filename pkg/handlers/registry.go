@@ -8,8 +8,8 @@ import (
 	"maunium.net/go/mautrix"
 	"maunium.net/go/mautrix/id"
 
-	"clawclack/bot/pkg/agent"
-	"clawclack/bot/pkg/shkeeper"
+	"clawclack/pkg/agent"
+	"clawclack/pkg/shkeeper"
 )
 
 // Context holds all dependencies for handlers
